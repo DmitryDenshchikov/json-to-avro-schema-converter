@@ -12,7 +12,7 @@ public class Application {
         Map<String, String> argsMap = CLIArgumentsParser.getAsMap(args);
 
         ParsingStrategy parsingStrategy = ParsingStrategiesRegistry.getAppropriateStrategy(argsMap);
-        parsingStrategy.parseJson(argsMap);
+        parsingStrategy.getJson(argsMap);
     }
 
 }

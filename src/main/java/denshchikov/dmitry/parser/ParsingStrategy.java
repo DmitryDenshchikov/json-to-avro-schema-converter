@@ -1,6 +1,6 @@
 package denshchikov.dmitry.parser;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.JsonParser;
 
 import java.util.Map;
 
@@ -9,7 +9,7 @@ import java.util.Map;
  */
 public abstract class ParsingStrategy {
 
-    public abstract JsonNode parseJson(Map<String, String> args);
+    public abstract JsonParser getJson(Map<String, String> args);
 
     /**
      * Qualify whether the strategy is appropriate or not.
