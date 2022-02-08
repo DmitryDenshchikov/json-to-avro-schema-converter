@@ -6,7 +6,8 @@ import java.util.Map;
 public class ParsingStrategiesRegistry {
 
     private static final List<ParsingStrategy> strategies = List.of(
-            new FileParsingStrategy()
+            new FileParsingStrategy(),
+            new ConsoleContentParsingStrategy()
     );
 
     public static ParsingStrategy getAppropriateStrategy(Map<String, String> args) {

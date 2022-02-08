@@ -5,7 +5,8 @@ package denshchikov.dmitry.config;
  */
 public enum CLIArgument {
 
-    PATH_TO_FILE_ARG("path-to-file");
+    PATH_TO_FILE_ARG("path-to-file"),
+    CONTENT_VIA_CLI("content-via-cli");
 
 
     private final String name;
