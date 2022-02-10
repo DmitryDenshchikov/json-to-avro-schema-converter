@@ -1,7 +1,7 @@
 package denshchikov.dmitry;
 
-import denshchikov.dmitry.parser.ParsingStrategiesRegistry;
-import denshchikov.dmitry.parser.ParsingStrategy;
+import denshchikov.dmitry.parser.strategy.ParsingStrategiesRegistry;
+import denshchikov.dmitry.parser.strategy.ParsingStrategy;
 import denshchikov.dmitry.parser.cli.CLIArgumentsParser;
 
 import java.util.Map;

@@ -1,4 +1,4 @@
-package denshchikov.dmitry.parser;
+package denshchikov.dmitry.parser.strategy;
 
 import java.util.List;
 import java.util.Map;

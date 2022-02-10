@@ -3,7 +3,7 @@ package denshchikov.dmitry.parser.cli;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CLIArgumentsParser {
+public final class CLIArgumentsParser {
 
     private CLIArgumentsParser() {
         throw new UnsupportedOperationException("This is an utility class");
