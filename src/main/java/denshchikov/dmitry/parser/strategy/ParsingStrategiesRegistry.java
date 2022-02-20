@@ -4,9 +4,7 @@ import javax.inject.Inject;
 import java.util.Set;
 import java.util.Map;
 
-public class ParsingStrategiesRegistry {
-
-    private final Set<ParsingStrategy> strategies;
+public record ParsingStrategiesRegistry(Set<ParsingStrategy> strategies) {
 
     @Inject
     public ParsingStrategiesRegistry(Set<ParsingStrategy> strategies) {

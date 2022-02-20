@@ -9,9 +9,7 @@ import java.util.Map;
  * Mappers container. Just stores and distributes {@link Mapper} objects associated with appropriate json types.
  * See {@link Mapper} for details.
  */
-public class MappersRegistry {
-
-    private final Map<JsonType, Mapper> mappers;
+public record MappersRegistry(Map<JsonType, Mapper> mappers) {
 
     @Inject
     public MappersRegistry(Map<JsonType, Mapper> mappers) {
