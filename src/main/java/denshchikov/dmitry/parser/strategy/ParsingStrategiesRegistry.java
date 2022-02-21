@@ -1,16 +1,17 @@
 package denshchikov.dmitry.parser.strategy;
 
-import java.util.List;
+import javax.inject.Inject;
+import java.util.Set;
 import java.util.Map;
 
-public class ParsingStrategiesRegistry {
+public record ParsingStrategiesRegistry(Set<ParsingStrategy> strategies) {
 
-    private static final List<ParsingStrategy> strategies = List.of(
-            new FileParsingStrategy(),
-            new ConsoleContentParsingStrategy()
-    );
+    @Inject
+    public ParsingStrategiesRegistry(Set<ParsingStrategy> strategies) {
+        this.strategies = strategies;
+    }
 
-    public static ParsingStrategy getAppropriateStrategy(Map<String, String> args) {
+    public ParsingStrategy getAppropriateStrategy(Map<String, String> args) {
         return strategies.stream()
                 .filter(parsingStrategy -> parsingStrategy.isAppropriate(args))
                 .findFirst()

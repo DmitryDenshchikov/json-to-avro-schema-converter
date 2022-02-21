@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import javax.inject.Inject;
+
 import denshchikov.dmitry.mapper.MappersRegistry;
 import denshchikov.dmitry.model.JsonType;
 
@@ -18,6 +21,7 @@ public class Converter {
     private final MappersRegistry mappersRegistry;
     private final ObjectMapper mapper;
 
+    @Inject
     public Converter(MappersRegistry registry, ObjectMapper mapper) {
         this.mappersRegistry = registry;
         this.mapper = mapper;
