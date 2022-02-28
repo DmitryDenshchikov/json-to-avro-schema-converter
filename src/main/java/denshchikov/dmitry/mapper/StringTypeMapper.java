@@ -7,10 +7,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import javax.inject.Inject;
 import java.util.Map;
 
-class NumberTypeMapper extends PrimitiveTypeMapper {
+class StringTypeMapper extends PrimitiveTypeMapper {
 
     @Inject
-    public NumberTypeMapper(ObjectMapper objectMapper) {
+    public StringTypeMapper(ObjectMapper objectMapper) {
         super(objectMapper);
     }
 
@@ -18,7 +18,7 @@ class NumberTypeMapper extends PrimitiveTypeMapper {
     public JsonNode map(Map.Entry<String, JsonNode> jsonNodeEntry) {
         ObjectNode avroSchema = objectMapper.createObjectNode();
         avroSchema.put("name", jsonNodeEntry.getKey());
-        avroSchema.put("type", "double");
+        avroSchema.put("type", "string");
         return avroSchema;
     }
 

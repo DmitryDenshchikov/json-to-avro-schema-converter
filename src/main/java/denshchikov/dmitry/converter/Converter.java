@@ -1,16 +1,16 @@
 package denshchikov.dmitry.converter;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import javax.inject.Inject;
 
+import denshchikov.dmitry.mapper.ComplexTypeMapper;
 import denshchikov.dmitry.mapper.MappersRegistry;
+import denshchikov.dmitry.mapper.PrimitiveTypeMapper;
 import denshchikov.dmitry.model.JsonType;
 
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Main converter between json and avro schemas.
@@ -19,12 +19,10 @@ import java.util.Map;
 public class Converter {
 
     private final MappersRegistry mappersRegistry;
-    private final ObjectMapper mapper;
 
     @Inject
-    public Converter(MappersRegistry registry, ObjectMapper mapper) {
+    public Converter(MappersRegistry registry) {
         this.mappersRegistry = registry;
-        this.mapper = mapper;
     }
 
 
@@ -33,55 +31,96 @@ public class Converter {
      * <p>
      * First, it initializes avro root node because there are some differences between initializing
      * avro root node and nested nodes.
-     * E.g. if root node is record, other nested nodes must be included in "fields" attribute. But root node
-     * must not be included into "fields" attribute. That's why there is
-     * other method {@link #map(Map.Entry, ArrayNode)} which maps nested nodes.
      *
      * @param jsonRoot json root node
      * @return avro root node
      */
-    public ObjectNode convert(JsonNode jsonRoot) {
-        ObjectNode avroRoot = mapper.createObjectNode();
-        avroRoot.put("name", jsonRoot.get("title").asText());
+    public JsonNode convert(JsonNode jsonRoot) {
+        String rootName = "MyAvroSchema";
+        if (jsonRoot.get("title") != null) {
+            rootName = jsonRoot.get("title").asText();
+        }
+        JsonNode avroRoot;
 
         JsonType type = JsonType.of(jsonRoot.get("type").asText());
-        if (JsonType.OBJECT == type) {
-            avroRoot.put("type", "record");
-
-            ArrayNode arrayNode = mapper.createArrayNode();
-            avroRoot.set("fields", arrayNode);
-
-            JsonNode properties = jsonRoot.get("properties");
-            properties.fields().forEachRemaining(jsonNodeEntry -> map(jsonNodeEntry, arrayNode));
+        if (JsonType.OBJECT == type || JsonType.ARRAY == type) {
+            avroRoot = mappersRegistry.getMapper(type, ComplexTypeMapper.class)
+                    .mapAsSchema(Map.entry(rootName, jsonRoot), mapAsNested);
         } else {
-            mappersRegistry.getMapper(type).map(jsonRoot, avroRoot);
+            avroRoot = mappersRegistry.getMapper(type, PrimitiveTypeMapper.class).map(Map.entry(rootName, jsonRoot));
         }
 
         return avroRoot;
     }
 
-    private void map(Map.Entry<String, JsonNode> jsonEntry, ArrayNode currentAvroFieldsBlock) {
-        ObjectNode avroNode = mapper.createObjectNode();
-        avroNode.put("name", jsonEntry.getKey());
+    /**
+     * This function is needed because object and array mappings should be also present in separate classes (like
+     * primitive type mappers {@link PrimitiveTypeMapper}). But for object and array mappings we need
+     * to map nested nodes. To avoid injecting {@link MappersRegistry} in mappers (it would cause circular dependency),
+     * was decided to send handling as callback parameter.
+     * This function represents mapping when in Avro node must be present in next view (e.g. as record field):
+     * <pre><code>
+     * {
+     *     "type" : {
+     *         "name" : "some name"
+     *         "type" : "some type"
+     *         ...
+     *     }
+     * }
+     * </code></pre>
+     */
+    private final Function<Map.Entry<String, JsonNode>, JsonNode> mapAsNested = new Function<>() {
+        @Override
+        public JsonNode apply(Map.Entry<String, JsonNode> jsonEntry) {
+            JsonNode avroNode;
 
-        JsonType type = JsonType.of(jsonEntry.getValue().get("type").asText());
-        if (JsonType.OBJECT == type) {
-            ObjectNode recordNode = mapper.createObjectNode();
-            avroNode.set("type", recordNode);
+            JsonType type = JsonType.of(jsonEntry.getValue().get("type").asText());
+            if (JsonType.OBJECT == type) {
+                avroNode = mappersRegistry.getMapper(type, ComplexTypeMapper.class)
+                        .mapAsNested(jsonEntry, mapAsNested);
+            } else if (JsonType.ARRAY == type) {
+                avroNode = mappersRegistry.getMapper(type, ComplexTypeMapper.class)
+                        .mapAsNested(jsonEntry, mapAsSchema);
+            } else {
+                avroNode = mappersRegistry.getMapper(type, PrimitiveTypeMapper.class).map(jsonEntry);
+            }
 
-            recordNode.put("name", jsonEntry.getKey() + "Record");
-            recordNode.put("type", "record");
-
-            ArrayNode arrayNode = mapper.createArrayNode();
-            recordNode.set("fields", arrayNode);
-
-            JsonNode properties = jsonEntry.getValue().get("properties");
-            properties.fields().forEachRemaining(jsonNodeEntry -> map(jsonNodeEntry, arrayNode));
-        } else {
-            mappersRegistry.getMapper(type).map(jsonEntry.getValue(), avroNode);
+            return avroNode;
         }
+    };
 
-        currentAvroFieldsBlock.add(avroNode);
-    }
+    /**
+     * This function is needed because object and array mappings should be also present in separate classes (like
+     * primitive type mappers {@link PrimitiveTypeMapper}). But for object and array mappings we need
+     * to map nested nodes. To avoid injecting {@link MappersRegistry} in mappers (it would cause circular dependency),
+     * was decided to send handling as callback parameter.
+     * This function represents mapping when in Avro node must be present in next view (e.g. as array item):
+     * <pre><code>
+     * {
+     *      "name" : "some name"
+     *      "type" : "some type"
+     * }
+     * </code></pre>
+     */
+    private final Function<Map.Entry<String, JsonNode>, JsonNode> mapAsSchema = new Function<>() {
+        @Override
+        public JsonNode apply(Map.Entry<String, JsonNode> jsonEntry) {
+            JsonNode avroNode;
+
+            JsonType type = JsonType.of(jsonEntry.getValue().get("type").asText());
+            if (JsonType.OBJECT == type) {
+                avroNode = mappersRegistry.getMapper(type, ComplexTypeMapper.class)
+                        .mapAsSchema(jsonEntry, mapAsNested);
+            } else if (JsonType.ARRAY == type) {
+                avroNode = mappersRegistry.getMapper(type, ComplexTypeMapper.class)
+                        .mapAsSchema(jsonEntry, mapAsSchema);
+            } else {
+                avroNode = mappersRegistry.getMapper(type, PrimitiveTypeMapper.class).map(jsonEntry);
+            }
+
+            return avroNode;
+        }
+    };
+
 
 }

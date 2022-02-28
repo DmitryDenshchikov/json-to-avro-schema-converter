@@ -20,4 +20,14 @@ public record MappersRegistry(Map<JsonType, Mapper> mappers) {
         return mappers.get(type);
     }
 
+    public <T> T getMapper(JsonType type, Class<T> clazz) throws ClassCastException {
+        Mapper mapper = mappers.get(type);
+
+        if (clazz.isInstance(mapper)) {
+            return clazz.cast(mapper);
+        } else {
+            throw new IllegalArgumentException("There is no " + clazz + " for json type " + type);
+        }
+    }
+
 }

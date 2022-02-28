@@ -1,15 +1,26 @@
 package denshchikov.dmitry.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-class IntegerTypeMapper implements Mapper {
+import javax.inject.Inject;
+import java.util.Map;
 
-    @Override
-    public void map(JsonNode jsonNode, JsonNode avroNode) {
-        ((ObjectNode) avroNode).put("type", "string");
+class IntegerTypeMapper extends PrimitiveTypeMapper {
 
-        // TODO: Add more implementation details
+    @Inject
+    public IntegerTypeMapper(ObjectMapper objectMapper) {
+        super(objectMapper);
     }
 
+    @Override
+    public JsonNode map(Map.Entry<String, JsonNode> jsonNodeEntry) {
+        // TODO: Add more implementation details
+
+        ObjectNode avroSchema = objectMapper.createObjectNode();
+        avroSchema.put("name", jsonNodeEntry.getKey());
+        avroSchema.put("type", "long");
+        return avroSchema;
+    }
 }

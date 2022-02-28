@@ -27,7 +27,7 @@ public class Application {
         JsonNode json = parsingStrategy.getJson(argsMap);
 
         Converter converter = injector.getInstance(Converter.class);
-        ObjectNode avroRoot = converter.convert(json);
+        ObjectNode avroRoot = (ObjectNode) converter.convert(json);
 
         String avro = avroRoot.toPrettyString();
         System.out.println(avro);
