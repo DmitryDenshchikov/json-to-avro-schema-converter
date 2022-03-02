@@ -45,4 +45,8 @@ public enum JsonType {
         throw new IllegalArgumentException("There is no enum value for type name: " + typeName);
     }
 
+    public boolean isPrimitive() {
+        return this == BOOLEAN || this == STRING || this == INTEGER || this == NUMBER;
+    }
+
 }
