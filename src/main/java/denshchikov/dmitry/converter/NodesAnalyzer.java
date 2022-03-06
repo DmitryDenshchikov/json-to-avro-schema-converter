@@ -4,13 +4,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import denshchikov.dmitry.mapper.Mapper;
 import denshchikov.dmitry.mapper.MappersFactory;
 import denshchikov.dmitry.model.JsonType;
-import denshchikov.dmitry.utils.NameGenerator;
 
 import javax.inject.Inject;
 import java.util.LinkedList;
-import java.util.Map;
 
 public record NodesAnalyzer(MappersFactory mappersFactory) {
+
+    private static final LinkedList<Mapper> EMPTY_MAPPERS_LIST = new LinkedList<>();
 
     @Inject
     public NodesAnalyzer {
@@ -19,27 +19,24 @@ public record NodesAnalyzer(MappersFactory mappersFactory) {
     /**
      * Analyze json nodes starting from the root and creating mappers chain (chain of responsibilities)
      *
-     * @param root pair of root json node name and root json node content
+     * @param rootContent json node content
      * @return root chain mapper
      */
-    public Mapper analyze(Map.Entry<String, JsonNode> root) {
-        final LinkedList<Mapper> emptyList = new LinkedList<>();
+    public Mapper analyze(JsonNode rootContent) {
+        JsonType type = JsonType.of(rootContent.get("type").asText());
 
-        JsonType type = JsonType.of(root.getValue().get("type").asText());
         if (type.isPrimitive()) {
-            return mappersFactory.getMapper(type, emptyList);
+            return mappersFactory.getMapper(type, EMPTY_MAPPERS_LIST);
         } else {
             if (JsonType.OBJECT == type) {
-                JsonNode properties = root.getValue().get("properties");
+                JsonNode properties = rootContent.get("properties");
 
                 LinkedList<Mapper> fieldsMappers = new LinkedList<>();
-                properties.fields().forEachRemaining(jsonNodeEntry -> fieldsMappers.add(analyze(jsonNodeEntry)));
+                properties.fields().forEachRemaining(jsonNodeEntry -> fieldsMappers.add(analyze(jsonNodeEntry.getValue())));
 
                 return mappersFactory.getMapper(type, fieldsMappers);
             } else if (JsonType.ARRAY == type) {
-                String uniqueItemName = NameGenerator.getArrayItemUniqueName();
-
-                Mapper itemsMapper = analyze(Map.entry(uniqueItemName, root.getValue().get("items")));
+                Mapper itemsMapper = analyze(rootContent.get("items"));
 
                 LinkedList<Mapper> itemsMappers = new LinkedList<>();
                 itemsMappers.add(itemsMapper);

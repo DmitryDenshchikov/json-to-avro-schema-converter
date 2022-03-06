@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import denshchikov.dmitry.utils.NameGenerator;
 
 import java.util.LinkedList;
-import java.util.Map;
 
 class ArrayTypeMapper extends Mapper {
 
@@ -20,9 +19,9 @@ class ArrayTypeMapper extends Mapper {
 
 
     @Override
-    public JsonNode mapAsNested(Map.Entry<String, JsonNode> jsonNodeEntry) {
+    public JsonNode mapAsNested(String nodeName, JsonNode nodeContent) {
         ObjectNode avroNode = objectMapper.createObjectNode();
-        avroNode.put("name", jsonNodeEntry.getKey());
+        avroNode.put("name", nodeName);
 
         ObjectNode arrayNode = objectMapper.createObjectNode();
         avroNode.set("type", arrayNode);
@@ -31,7 +30,7 @@ class ArrayTypeMapper extends Mapper {
 
         String uniqueItemName = NameGenerator.getArrayItemUniqueName();
 
-        JsonNode items = nextMappers.remove().mapAsSchema(Map.entry(uniqueItemName, jsonNodeEntry.getValue().get("items")));
+        JsonNode items = nextMappers.remove().mapAsSchema(uniqueItemName, nodeContent.get("items"));
 
         arrayNode.set("items", items);
 
@@ -39,14 +38,14 @@ class ArrayTypeMapper extends Mapper {
     }
 
     @Override
-    public JsonNode mapAsSchema(Map.Entry<String, JsonNode> jsonNodeEntry) {
+    public JsonNode mapAsSchema(String nodeName, JsonNode nodeContent) {
         ObjectNode avroNode = objectMapper.createObjectNode();
         avroNode.put("type", "array");
-        avroNode.put("name", jsonNodeEntry.getKey());
+        avroNode.put("name", nodeName);
 
         String uniqueItemName = NameGenerator.getArrayItemUniqueName();
 
-        JsonNode items = nextMappers.get(0).mapAsSchema(Map.entry(uniqueItemName, jsonNodeEntry.getValue().get("items")));
+        JsonNode items = nextMappers.get(0).mapAsSchema(uniqueItemName, nodeContent.get("items"));
 
         avroNode.set("items", items);
 

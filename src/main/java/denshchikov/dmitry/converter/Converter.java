@@ -6,8 +6,6 @@ import javax.inject.Inject;
 
 import denshchikov.dmitry.mapper.Mapper;
 
-import java.util.Map;
-
 /**
  * Main converter between json and avro schemas.
  */
@@ -33,9 +31,9 @@ public record Converter(NodesAnalyzer nodesAnalyzer) {
             rootName = jsonRoot.get("title").asText();
         }
 
-        Mapper mapperChainRoot = nodesAnalyzer.analyze(Map.entry(rootName, jsonRoot));
+        Mapper mapperChainRoot = nodesAnalyzer.analyze(jsonRoot);
 
-        return mapperChainRoot.mapAsSchema(Map.entry(rootName, jsonRoot));
+        return mapperChainRoot.mapAsSchema(rootName, jsonRoot);
     }
 
 }

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.inject.Inject;
 import java.util.LinkedList;
-import java.util.Map;
 
 /**
  * Mapper for json node to avro node transformation.
@@ -39,13 +38,15 @@ public abstract class Mapper {
      * }
      * </code></pre>
      * <p>
-     * For primitive type at present there is no differences in processing between {@link #mapAsNested(Map.Entry)}
-     * and {@link #mapAsSchema(Map.Entry)}.
+     * For primitive type at present there is no differences in processing between {@link #mapAsNested(String, JsonNode)}
+     * and {@link #mapAsSchema(String, JsonNode)}.
      *
-     * @param jsonNodeEntry pair of json node name and node content.
+     *
+     * @param nodeName json node name
+     * @param nodeContent json node content
      * @return avro node.
      */
-    public abstract JsonNode mapAsNested(Map.Entry<String, JsonNode> jsonNodeEntry);
+    public abstract JsonNode mapAsNested(String nodeName, JsonNode nodeContent);
 
     /**
      * Map json node as schema avro node.
@@ -59,12 +60,14 @@ public abstract class Mapper {
      * }
      * </code></pre>
      * <p>
-     * For primitive type at present there is no differences in processing between {@link #mapAsNested(Map.Entry)}
-     * and {@link #mapAsSchema(Map.Entry)}.
+     * For primitive type at present there is no differences in processing between {@link #mapAsNested(String, JsonNode)}
+     * and {@link #mapAsSchema(String, JsonNode)}.
      *
-     * @param jsonNodeEntry pair of json node name and node content.
+     *
+     * @param nodeName json node name
+     * @param nodeContent json node content
      * @return avro node.
      */
-    public abstract JsonNode mapAsSchema(Map.Entry<String, JsonNode> jsonNodeEntry);
+    public abstract JsonNode mapAsSchema(String nodeName, JsonNode nodeContent);
 
 }

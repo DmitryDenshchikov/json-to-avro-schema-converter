@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import javax.inject.Inject;
 import java.util.LinkedList;
-import java.util.Map;
 
 class NumberTypeMapper extends PrimitiveTypeMapper {
 
@@ -16,18 +15,18 @@ class NumberTypeMapper extends PrimitiveTypeMapper {
     }
 
     @Override
-    public JsonNode mapAsNested(Map.Entry<String, JsonNode> jsonNodeEntry) {
-        return map(jsonNodeEntry);
+    public JsonNode mapAsNested(String nodeName, JsonNode nodeContent) {
+        return map(nodeName, nodeContent);
     }
 
     @Override
-    public JsonNode mapAsSchema(Map.Entry<String, JsonNode> jsonNodeEntry) {
-        return map(jsonNodeEntry);
+    public JsonNode mapAsSchema(String nodeName, JsonNode nodeContent) {
+        return map(nodeName, nodeContent);
     }
 
-    public JsonNode map(Map.Entry<String, JsonNode> jsonNodeEntry) {
+    public JsonNode map(String nodeName, JsonNode nodeContent) {
         ObjectNode avroSchema = objectMapper.createObjectNode();
-        avroSchema.put("name", jsonNodeEntry.getKey());
+        avroSchema.put("name", nodeName);
         avroSchema.put("type", "double");
         return avroSchema;
     }

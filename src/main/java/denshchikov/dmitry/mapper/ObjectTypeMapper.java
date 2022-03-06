@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.util.LinkedList;
-import java.util.Map;
 
 class ObjectTypeMapper extends Mapper {
 
@@ -16,38 +15,44 @@ class ObjectTypeMapper extends Mapper {
 
 
     @Override
-    public JsonNode mapAsNested(Map.Entry<String, JsonNode> jsonNodeEntry) {
+    public JsonNode mapAsNested(String nodeName, JsonNode nodeContent) {
         ObjectNode avroNode = objectMapper.createObjectNode();
-        avroNode.put("name", jsonNodeEntry.getKey());
+        avroNode.put("name", nodeName);
 
         ObjectNode recordNode = objectMapper.createObjectNode();
         avroNode.set("type", recordNode);
 
-        recordNode.put("name", jsonNodeEntry.getKey() + "Record");
+        recordNode.put("name", nodeName + "Record");
         recordNode.put("type", "record");
 
         ArrayNode arrayNode = objectMapper.createArrayNode();
         recordNode.set("fields", arrayNode);
 
-        JsonNode properties = jsonNodeEntry.getValue().get("properties");
+        JsonNode properties = nodeContent.get("properties");
 
-        properties.fields().forEachRemaining(property -> arrayNode.add(nextMappers.remove().mapAsNested(property)));
+        properties.fields()
+                .forEachRemaining(
+                        prop -> arrayNode.add(nextMappers.remove().mapAsNested(prop.getKey(), prop.getValue()))
+                );
 
         return avroNode;
     }
 
     @Override
-    public JsonNode mapAsSchema(Map.Entry<String, JsonNode> jsonNodeEntry) {
+    public JsonNode mapAsSchema(String nodeName, JsonNode nodeContent) {
         ObjectNode avroNode = objectMapper.createObjectNode();
         avroNode.put("type", "record");
-        avroNode.put("name", jsonNodeEntry.getKey());
+        avroNode.put("name", nodeName);
 
         ArrayNode arrayNode = objectMapper.createArrayNode();
         avroNode.set("fields", arrayNode);
 
-        JsonNode properties = jsonNodeEntry.getValue().get("properties");
+        JsonNode properties = nodeContent.get("properties");
 
-        properties.fields().forEachRemaining(property -> arrayNode.add(nextMappers.remove().mapAsNested(property)));
+        properties.fields()
+                .forEachRemaining(
+                        prop -> arrayNode.add(nextMappers.remove().mapAsNested(prop.getKey(), prop.getValue()))
+                );
 
         return avroNode;
     }
