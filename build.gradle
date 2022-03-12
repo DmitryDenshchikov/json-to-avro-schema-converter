@@ -20,6 +20,18 @@ dependencies {
 
 }
 
+jar {
+    manifest {
+        attributes(
+                "Main-Class": "denshchikov.dmitry.Application",
+        )
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
 test {
     useJUnitPlatform()
     testLogging {
